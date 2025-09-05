@@ -193,12 +193,29 @@ M.setup = function(opts)
   -- prepare state table
   vim.g.dakin_php_tinker = { state = { buf = nil, win = nil, workingWin = nil } }
 
+  -- have some fallback in case the user wants one for their callback
+  -- or doesn't specify their own template
+  local defaultTemplate = { "\"Tinker away!\"" }
+
+  local template_content = opts.template_content or defaultTemplate
+
   -- easily bootable tinker window
   vim.api.nvim_create_user_command('PhpTinker', function()
     local buf = vim.api.nvim_create_buf(true, true)
     vim.api.nvim_win_set_buf(0, buf)
-    vim.api.nvim_buf_set_lines(buf, 0, 1, false, { "<?php", "", "\"Tinker away!\"" }) -- example code
-    vim.api.nvim_win_set_cursor(0, { 3, 0 })                                          -- position cursor
+
+    -- prepare the template
+    local template = { "<?php", "", }
+    local additional_template_content = template_content
+    -- if the template_content is a callback, run it with the defaultTemplate as a param
+    if type(template_content) == "function" then
+      additional_template_content = template_content(defaultTemplate)
+    end
+
+    vim.list_extend(template, additional_template_content)
+
+    vim.api.nvim_buf_set_lines(buf, 0, 1, false, template) -- example code
+    vim.api.nvim_win_set_cursor(0, { #template, 0 })       -- position cursor
 
     vim.api.nvim_buf_create_user_command(buf, 'PhpTinkerRun', M.run_tinker, {})
 

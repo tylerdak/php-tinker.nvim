@@ -44,6 +44,64 @@ I suggest starting with the above if you're using lazy. Once you've added the pl
 The `run_tinker` keymap defines what keymap in normal mode will trigger the `:PhpTinkerRun` command.
 > For consistency with something like CodeCompanion, `<CR>` feels like a nice default to try first. When developing this I was using `<Leader>rp` (for RunPhp, I guess) but that was pretty goofy and not very intuitive.
 
+### Startup Template
+#### Overriding the Default Template
+To replace the default "Tinker away!" text, you can set the `template_content` option to a table defining each line. The template gets prepended with a php tag so you don't have to include that.
+
+<details>
+  <summary>Example</summary>
+
+  ```lua
+  {
+    "tylerdak/php_tinker.nvim",
+    opts = {
+      template_content = {
+        "use Illuminate\Support\Arr;",
+        "use Illuminate\Support\Str;",
+        "",
+        "", -- blank lines for aesthetics
+      }
+    }
+  }
+  ```
+
+  yields
+
+  ```php
+  <?php
+
+  use Illuminate\Support\Arr;
+  use Illuminate\Support\Str;
+
+
+  ```
+  with the cursor starting on line 6.
+</details>
+
+#### Using a Callback
+For cases where you need a dynamic template, you can instead provide a callback for `template_content`. The callback may accept one parameter: the default "Tinker away!" template, in case you want something to fallback to.
+
+<details>
+  <summary>Example</summary>
+
+  ```lua
+  {
+    "tylerdak/php_tinker.nvim",
+    opts = {
+      template_content = function(default)
+          if vim.g.my_php_tinker_template then
+              return vim.g.my_php_tinker_template -- this global can be whatever you want! this is just an example
+          end
+          return default -- return "Tinker away" if the global isn't set
+      end
+    }
+  }
+  ```
+
+  I like this pattern because with `:help 'exrc'` on, you can define project-specific templates. So, in your WordPress projects you might boot WordPress and in your Laravel projects you might add use statements for some of the Laravel helpers like above.
+</details>
+
+
 ## Troubleshooting
 <details>
   <summary>`Invalid Path` when running `:PhpTinker`</summary>
