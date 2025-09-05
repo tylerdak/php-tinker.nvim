@@ -140,7 +140,7 @@ M.run_tinker = function()
   end
 
 
-  local olddata = vim.g.dakin_php_playground
+  local olddata = vim.g.dakin_php_tinker
 
   -- MARK: create split buffer
   local workingWin = vim.api.nvim_get_current_win()
@@ -184,14 +184,14 @@ M.run_tinker = function()
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, str_split(info_contents, "\n", true))
 
   -- save state
-  vim.g.dakin_php_playground = olddata
+  vim.g.dakin_php_tinker = olddata
 end
 
 M.setup = function(opts)
   opts = opts or {}
 
   -- prepare state table
-  vim.g.dakin_php_playground = { state = { buf = nil, win = nil, workingWin = nil } }
+  vim.g.dakin_php_tinker = { state = { buf = nil, win = nil, workingWin = nil } }
 
   -- easily bootable tinker window
   vim.api.nvim_create_user_command('PhpTinker', function()
