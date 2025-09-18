@@ -119,7 +119,7 @@ M.run_tinker = function()
         vim.api.nvim_win_set_buf(win, buf)
     end
 
-    vim.cmd("set ft=php_only") -- add syntax highlighting
+    vim.api.nvim_set_option_value("filetype", "php_only", { buf = buf }) -- add syntax highlighting
 
     -- switch back to editor window
     vim.api.nvim_set_current_win(workingWin)
