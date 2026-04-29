@@ -33,7 +33,10 @@ In your favorite package manager, add `tylerdak/php-tinker.nvim`. I use lazy, he
     opts = {
         keymaps = {
             run_tinker = "<CR>"
-        }
+        },
+        -- Automatically download the client phar for your current PHP version
+        -- See lua/php-tinker/init.lua:96 for the command being ran
+        auto_download = true,
     }
 }
 ```
