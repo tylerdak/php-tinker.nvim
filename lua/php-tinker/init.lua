@@ -71,7 +71,43 @@ local function str_beforeLast(inputstr, needle)
   return result
 end
 
-M.run_tinker = function()
+-- download_phar: Download TweakPHP's client phar file for the corresponding php version.
+-- The file is downloaded in the clients directory which is gitignored.
+--
+-- Parameters:
+-- phpver_result (string) - the current php version
+--
+-- Returns: nil
+local function download_phar(phpver_result, dest_folder)
+  -- Create dest_folder if it somehow doesn't exist
+  if vim.fn.isdirectory(dest_folder) == 0 then
+    vim.fn.mkdir(dest_folder, "p")
+    return
+  end
+
+	-- NOTE This file here's path
+	local link_prefix = "https://github.com/tweakphp/client/releases/latest/download"
+	local link = string.format("%s/client-%s.phar", link_prefix, phpver_result)
+	local destination = string.format("%s/client-%s.phar", dest_folder, phpver_result)
+
+	-- Download the file
+	vim.notify("Downloading client-" .. phpver_result .. ".phar", vim.log.levels.INFO)
+
+  local download_command = vim.fn.executable("wget") == 1
+                           and { "wget", link, "-O", destination }
+                           or { "curl", "-L", link, "-o", destination }
+
+	vim.system(download_command, function(out)
+		if out.code == 0 and vim.fn.filereadable(destination) == 1 then
+			vim.notify("Download complete", vim.log.levels.INFO)
+			return
+		end
+
+		vim.notify("Failed to download client-" .. phpver_result .. ".phar", vim.log.levels.ERROR)
+	end):wait()
+end
+
+M.run_tinker = function(opts)
   vim.cmd('set ft=php_only')
 
   -- MARK: get contents and context
@@ -83,7 +119,7 @@ M.run_tinker = function()
   local working_dir = vim.fn.getcwd()
 
   -- MARK: Get php version
-  local getPhpVersion_Command = "php -v | grep \"PHP [0-9]\\.[0-9]\" | sed 's/^.* \\([0-9]\\.[0-9]\\).*$/\\1/'";
+  local getPhpVersion_Command = "php -v | grep \"PHP [0-9]\\.[0-9]\" | sed 's/^.* \\([0-9]\\.[0-9]\\).*$/\\1/'"
   local phpver_handle = io.popen(getPhpVersion_Command)
   if not phpver_handle then
     print("PHP version retrieval failed. Please ensure PHP is installed and is in your path.")
@@ -91,23 +127,32 @@ M.run_tinker = function()
   end
   local phpver_result = vim.trim(phpver_handle:read("*a"))
   phpver_handle:close()
-  local versionValid = string.match(phpver_result, '%d%.%d') ~= nil;
+  local versionValid = string.match(phpver_result, '%d%.%d') ~= nil
 
   if not versionValid then
     print("PHP version response was an improper format.\n" .. phpver_result)
     return
   end
 
-  local pluginDirectory = str_beforeLast(debug.getinfo(1).source:sub(2), '/');
+  local pluginDirectory = vim.fs.dirname(debug.getinfo(1).source:sub(2))
+	local clients_directory = vim.fs.normalize(vim.fs.joinpath(pluginDirectory, "..", "..", "clients"))
+
+	local version_file = string.format("%s/client-%s.phar", clients_directory, phpver_result)
+	if vim.fn.filereadable(version_file) == 0 and opts.auto_download then
+    download_phar(phpver_result, clients_directory)
+  elseif not opts.auto_download then
+    vim.notify("client-" .. phpver_result .. ".phar not found. Consider setting auto_download to true.", vim.log.levels.ERROR)
+    return
+	end
 
   -- MARK: run command
   local command = string.format(
     'php %s/client-%s.phar %s execute "%s"',
-    pluginDirectory,
+    clients_directory,
     phpver_result,
     working_dir,
     b64contents
-  );
+  )
   local handle = io.popen(command)
   if not handle then
     print("Failed to run tinker client with version " .. phpver_result)
@@ -188,7 +233,7 @@ M.run_tinker = function()
 end
 
 M.setup = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", { auto_download = true }, opts or {})
 
   -- prepare state table
   vim.g.dakin_php_playground = { state = { buf = nil, win = nil, workingWin = nil } }
@@ -200,15 +245,15 @@ M.setup = function(opts)
     vim.api.nvim_buf_set_lines(buf, 0, 1, false, { "<?php", "", "\"Tinker away!\"" }) -- example code
     vim.api.nvim_win_set_cursor(0, { 3, 0 })                                          -- position cursor
 
-    vim.api.nvim_buf_create_user_command(buf, 'PhpTinkerRun', M.run_tinker, {})
+    vim.api.nvim_buf_create_user_command(buf, 'PhpTinkerRun', function() M.run_tinker(opts) end, {})
 
     -- setup Refresh rePl keymap
     if opts.keymaps and opts.keymaps.run_tinker then
-      vim.keymap.set('n', opts.keymaps.run_tinker, M.run_tinker, { buffer = true })
+      vim.keymap.set('n', opts.keymaps.run_tinker, function() M.run_tinker(opts) end, { buffer = true })
     end
 
     -- initialize results window by running once at startup
-    M.run_tinker()
+    M.run_tinker(opts)
   end, {})
 end
 
