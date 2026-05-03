@@ -1,0 +1,115 @@
+*php-tinker.nvim*   Plugin for interactive PHP tinkering in Neovim
+
+==============================================================================
+INTRODUCTION
+
+php-tinker.nvim provides a PHP REPL inside Neovim. Tinker with PHP code in split buffers, evaluate code, and see results instantly.
+
+==============================================================================
+REQUIREMENTS                                               *php-tinker.nvim-requirements*
+
+- PHP
+    - Any version with a matching client-*.phar file in `lua/php-tinker/`
+    - `php` must be in your PATH
+- `grep` and `sed` (for PHP version parsing)
+- Neovim 0.11+
+
+==============================================================================
+USAGE                                                      *php-tinker.nvim-usage*
+
+In a PHP project, run:
+
+    :PhpTinker
+
+This opens two split buffers. If you see "Tinker away!" in both, you're ready.
+
+Edit the left buffer, then run:
+
+    :PhpTinkerRun
+
+The right buffer will show the evaluation result for each statement.
+
+If splits do not appear, ensure you are in a PHP project (WordPress, Laravel,
+and any project with a vendor/autoload.php file are supported).
+
+==============================================================================
+CONFIGURATION                                              *php-tinker.nvim-configuration*
+
+Keymaps:
+- `run_tinker`: Normal mode key to trigger `:PhpTinkerRun` (default: `<CR>`)
+
+Example:
+
+    {
+        "tylerdak/php-tinker.nvim",
+        opts = {
+            keymaps = {
+                run_tinker = "<CR>"
+            }
+        }
+    }
+
+Startup Template:
+- Override the code that gets added on startup by setting `template_content` to a Lua table where each item is a line of code.
+- The plugin prepends `<?php\n` automatically.
+
+Example:
+
+    {
+        "tylerdak/php_tinker.nvim",
+        opts = {
+            template_content = {
+                "use Illuminate\\Support\\Arr;",
+                "use Illuminate\\Support\\Str;",
+                "",
+                "",
+            }
+        }
+    }
+
+Dynamic Template:
+- `template_content` can be a function returning a table like the one above.
+- The function receives the default template as an argument.
+
+Example:
+
+    {
+        "tylerdak/php_tinker.nvim",
+        opts = {
+            template_content = function(default)
+                if vim.g.my_php_tinker_template then
+                    return vim.g.my_php_tinker_template
+                end
+                return default
+            end
+        }
+    }
+
+==============================================================================
+TROUBLESHOOTING                                            *php-tinker.nvim-troubleshooting*
+
+- `Invalid Path` error: Your project is not detected by the TweakPHP client.
+    - Ensure `vendor/autoload.php` exists (can be empty).
+    - Laravel, WordPress, or Symfony projects are auto-detected.
+
+- Semicolons: Required for all PHP statements except the last line. The last line may omit the semicolon.
+
+==============================================================================
+ROADMAP                                                    *php-tinker.nvim-roadmap*
+
+Planned features:
+- More configuration options (e.g., startup hooks)
+- Automatic client download/build
+- Savable tinker sessions
+- ~~Help entry~~
+- ~~LSP/cmp support~~
+
+Contributions and suggestions are welcome!
+
+==============================================================================
+AUTHOR                                                      *php-tinker.nvim-author*
+
+- github.com/tylerdak/php-tinker.nvim
+
+==============================================================================
+vim:tw=78:ft=help:norl:

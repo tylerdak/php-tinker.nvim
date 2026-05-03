@@ -23,10 +23,9 @@ If you see the text "Tinker away!" on both screens, you're good to go! You can e
 - grep & sed
   - We use these to detect your PHP version. php-tinker runs `php -v` and then pipes it to grep and sed to pull out the version (e.g. `8.4`).
 - Neovim 0.11+
-  - I think I tested this on 0.10 before I upgraded, but currently I'm only testing this on 0.11
  
 ## Installation
-In your favorite package manager, add `tylerdak/php-tinker.nvim`. I use lazy, here's my config:
+In your favorite package manager, add `tylerdak/php-tinker.nvim`. Here's a basic example using lazy package manager:
 ```lua
 {
     "tylerdak/php-tinker.nvim",
@@ -39,10 +38,10 @@ In your favorite package manager, add `tylerdak/php-tinker.nvim`. I use lazy, he
 ```
 
 ## Configuration
-I suggest starting with the above if you're using lazy. Once you've added the plugin to your manager, you could technically be up and running on your next restart. However, I suggest adding a keymap like I do above.
+The above configuration is a good starting point if you're using Lazy package manager.
 
-The `run_tinker` keymap defines what keymap in normal mode will trigger the `:PhpTinkerRun` command.
-> For consistency with something like CodeCompanion, `<CR>` feels like a nice default to try first. When developing this I was using `<Leader>rp` (for RunPhp, I guess) but that was pretty goofy and not very intuitive.
+Once you've added the plugin to your manager, you should be up and running on your next restart. The `run_tinker` keymap above triggers will trigger the `:PhpTinkerRun` command in normal mode.
+> For consistency with something like CodeCompanion, `<CR>` is a solid default to try first.
 
 ### Startup Template
 #### Overriding the Default Template
@@ -98,7 +97,9 @@ For cases where you need a dynamic template, you can instead provide a callback 
   }
   ```
 
-  I like this pattern because with `:help 'exrc'` on, you can define project-specific templates. So, in your WordPress projects you might boot WordPress and in your Laravel projects you might add use statements for some of the Laravel helpers like above.
+  > This pattern is handy with `:help 'exrc'` on because you can define templates for each of your projects. In your WordPress projects you might boot WordPress, but in your Laravel projects you might add use statements for some of the Laravel helpers like above.
+  >
+  > You could also use the callback to figure out what type of project the current working directory holds and pick the template automatically. Endless possibilities!
 </details>
 
 
@@ -131,14 +132,13 @@ For cases where you need a dynamic template, you can instead provide a callback 
 
 ## Roadmap
 
-If I have time, I might tackle some of these:
-- Add more configuration where applicable
-  - e.g. hooks for the startup process, so you can replace the default `"Tinker away!"` text with something useful like dependency imports
+- [x] Add more configuration where applicable
+  - [x] e.g. hooks for the startup process, so you can replace the default `"Tinker away!"` text with something useful like dependency imports
+- [x] LSP/cmp support
 - Add a help entry
 - Automatic client download for your relevant PHP version
   - Feels somewhat silly and wasteful to have several client versions in the repo
   - It'd be cool to build the client using the user's installed PHP if it doesn't exist
 - Savable tinker sessions
-- LSP/cmp support would be really poggers but I have no clue how to do that yet
 
-> Feel free to submit PRs or ideas for getting the above done, though!
+> PRs or ideas for getting the above done are welcome!
