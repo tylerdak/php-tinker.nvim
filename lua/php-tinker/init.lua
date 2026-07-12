@@ -108,7 +108,7 @@ local function download_phar(phpver_result, dest_folder)
 end
 
 M.run_tinker = function(opts)
-  vim.cmd('set ft=php_only')
+  vim.cmd('set ft=php')
 
   -- MARK: get contents and context
   local contents = vim.trim(table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
