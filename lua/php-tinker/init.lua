@@ -112,6 +112,7 @@ M.run_tinker = function()
     --restore existing buffer if possible
     if olddata.state.buf == nil or not vim.api.nvim_buf_is_valid(olddata.state.buf) then
         buf = vim.api.nvim_create_buf(true, true)
+        vim.api.nvim_buf_set_option(buf, "swapfile", false)
         olddata.state.buf = buf
         vim.api.nvim_win_set_buf(win, buf)
     else
@@ -157,6 +158,7 @@ M.setup = function(opts)
     -- easily bootable tinker window
     vim.api.nvim_create_user_command('PhpTinker', function()
         local buf = vim.api.nvim_create_buf(true, false)
+        vim.api.nvim_buf_set_option(buf, "swapfile", false)
         vim.api.nvim_set_option_value("filetype", "php", { buf = buf })
         vim.api.nvim_win_set_buf(0, buf)
 
